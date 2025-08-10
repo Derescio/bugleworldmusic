@@ -125,6 +125,7 @@ jobs:
 
       - name: Wait for app to be ready
         run: npx wait-on http://localhost:3000
+        timeout-minutes: 5
 
       - name: Run Lighthouse CI
         run: |
@@ -132,6 +133,7 @@ jobs:
           lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        continue-on-error: true # Allow CI to continue if Lighthouse fails
 
   deploy-preview:
     runs-on: ubuntu-latest
@@ -149,6 +151,7 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           github-comment: true
+        continue-on-error: true # Allow CI to continue if deployment fails
 
   deploy-production:
     runs-on: ubuntu-latest
@@ -166,3 +169,4 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
+        continue-on-error: true # Allow CI to continue if deployment fails

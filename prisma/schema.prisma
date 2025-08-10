@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and roles
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// Main music table
+model Music {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?   @db.Text
+  releaseDate   DateTime? @map("release_date")
+  duration      Int? // Duration in seconds
+  coverImageUrl String?   @map("cover_image_url")
+  label         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  genres MusicGenre[]
+  tags   MusicTag[]
+  links  Link[]
+
+  @@map("music")
+}
+
+// Genres table
+model Genre {
+  id    Int          @id @default(autoincrement())
+  name  String       @unique
+  music MusicGenre[]
+
+  @@map("genres")
+}
+
+// Join table for Music-Genre many-to-many
+model MusicGenre {
+  musicId String @map("music_id")
+  genreId Int    @map("genre_id")
+  music   Music  @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([musicId, genreId])
+  @@map("music_genres")
+}
+
+// Tags table (Single, EP, Album, etc.)
+model Tag {
+  id    Int        @id @default(autoincrement())
+  name  String     @unique
+  music MusicTag[]
+
+  @@map("tags")
+}
+
+// Join table for Music-Tag many-to-many
+model MusicTag {
+  musicId String @map("music_id")
+  tagId   Int    @map("tag_id")
+  music   Music  @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([musicId, tagId])
+  @@map("music_tags")
+}
+
+// Platform links table (Spotify, YouTube, etc.)
+model Link {
+  id       Int    @id @default(autoincrement())
+  musicId  String @map("music_id")
+  platform String // "Spotify", "YouTube", "Apple Music", etc.
+  url      String
+  music    Music  @relation(fields: [musicId], references: [id], onDelete: Cascade)
+
+  @@map("links")
+}

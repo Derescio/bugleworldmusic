@@ -1,0 +1,15 @@
+---
+alwaysApply: false
+---
+
+# Create Spec
+
+Create a detailed spec for a new feature with technical specifications and task breakdown
+
+Refer to the instructions located in @~/.agent-os/instructions/core/create-spec.md
+## Fallback Instructions
+If you encounter file reading issues with the Agent OS instructions:
+1. **Copy to workspace**: Use this command to copy the instructions to the current project:
+   ```bash
+   cp ~/.agent-os/instructions/core/plan-product.md ./plan-product-instructions.md
+   ```

@@ -1,0 +1,15 @@
+---
+alwaysApply: false
+---
+
+# Execute Task
+
+Execute the next task.
+
+Refer to the instructions located in @~/.agent-os/instructions/core/execute-tasks.md
+## Fallback Instructions
+If you encounter file reading issues with the Agent OS instructions:
+1. **Copy to workspace**: Use this command to copy the instructions to the current project:
+   ```bash
+   cp ~/.agent-os/instructions/core/plan-product.md ./plan-product-instructions.md
+   ```

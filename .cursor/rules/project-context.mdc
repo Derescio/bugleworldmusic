@@ -1,0 +1,66 @@
+---
+alwaysApply: true
+---
+
+# Project Context - Bugle World Music
+
+## Project Overview
+This is a comprehensive entertainer website built with Next.js 15, React 19, and TypeScript. The site serves as a central hub for fans, industry professionals, and the entertainer's team.
+
+## Key Features
+- **Home Page**: Latest updates, featured events, new releases
+- **About Page**: Biography, career highlights, press kit
+- **Show Dates**: Dynamic events calendar with ticket links
+- **Merch Store**: Physical and digital products with Stripe integration
+- **Digital Downloads**: Secure content delivery with DRM
+- **Streaming Links**: Integration with Spotify, Apple Music, YouTube
+- **Fan Interaction**: Comments, polls, Q&A, mailing list
+- **Booking System**: Professional inquiry forms with automation
+- **Media Gallery**: Photos, videos, behind-the-scenes content
+- **SEO Optimized**: Schema markup, fast loading, responsive design
+
+## Architecture
+- **Frontend**: Next.js 15 App Router, React 19, TypeScript
+- **Styling**: Tailwind CSS 4 with custom design system
+- **State**: React Context API with useReducer
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js
+- **Payments**: Stripe integration
+- **File Storage**: AWS S3 or Cloudinary
+- **Email**: SendGrid for notifications
+
+## Development Guidelines
+- Follow Next.js 15 best practices with App Router
+- Use TypeScript for all components and utilities
+- Implement responsive design with mobile-first approach
+- Ensure accessibility compliance (WCAG 2.1 AA)
+- Optimize for Core Web Vitals
+- Use semantic HTML and proper SEO structure
+- Implement proper error handling and loading states
+
+## File Structure
+```
+app/
+├── (pages)/
+│   ├── about/
+│   ├── shows/
+│   ├── store/
+│   ├── gallery/
+│   └── booking/
+├── components/
+│   ├── ui/
+│   ├── forms/
+│   └── layout/
+├── lib/
+│   ├── utils/
+│   ├── api/
+│   └── types/
+└── styles/
+```
+
+## Brand Identity
+- **Name**: Bugle World Music
+- **Style**: Modern, professional, music-focused
+- **Colors**: To be defined based on artist branding
+- **Typography**: Geist Sans (primary), Geist Mono (code)
+- **Imagery**: High-quality photos, professional presentation

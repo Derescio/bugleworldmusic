@@ -50,9 +50,11 @@ describe('/api/music', () => {
         },
       ];
 
+      // @ts-expect-error - Vitest mock typing issue
       mockPrisma.music.findMany.mockResolvedValue(mockMusic);
+      // @ts-expect-error - Vitest mock typing issue
       mockPrisma.music.count.mockResolvedValue(1);
-      mockNextResponse.json.mockReturnValue(new Response() as unknown as Response);
+      mockNextResponse.json.mockReturnValue({} as NextResponse);
 
       const mockRequest = {
         url: 'http://localhost:3000/api/music',
@@ -96,9 +98,11 @@ describe('/api/music', () => {
 
     it('should handle custom pagination parameters', async () => {
       // Arrange
+      // @ts-expect-error - Vitest mock typing issue
       mockPrisma.music.findMany.mockResolvedValue([]);
+      // @ts-expect-error - Vitest mock typing issue
       mockPrisma.music.count.mockResolvedValue(25);
-      mockNextResponse.json.mockReturnValue(new Response() as unknown as Response);
+      mockNextResponse.json.mockReturnValue({} as NextResponse);
 
       const mockRequest = {
         url: 'http://localhost:3000/api/music?page=2&limit=5',
@@ -131,8 +135,9 @@ describe('/api/music', () => {
     it('should handle database errors gracefully', async () => {
       // Arrange
       const dbError = new Error('Database connection failed');
+      // @ts-expect-error - Vitest mock typing issue
       mockPrisma.music.findMany.mockRejectedValue(dbError);
-      mockNextResponse.json.mockReturnValue(new Response() as unknown as Response);
+      mockNextResponse.json.mockReturnValue({} as NextResponse);
 
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const mockRequest = {
@@ -179,8 +184,9 @@ describe('/api/music', () => {
         links: mockMusicData.links,
       };
 
+      // @ts-expect-error - Vitest mock typing issue
       mockPrisma.music.create.mockResolvedValue(mockCreatedMusic);
-      mockNextResponse.json.mockReturnValue(new Response() as unknown as Response);
+      mockNextResponse.json.mockReturnValue({} as NextResponse);
 
       const mockRequest = {
         json: vi.fn().mockResolvedValue(mockMusicData),
@@ -237,7 +243,7 @@ describe('/api/music', () => {
         description: 'A song without title',
       };
 
-      mockNextResponse.json.mockReturnValue(new Response() as unknown as Response);
+      mockNextResponse.json.mockReturnValue({} as NextResponse);
 
       const mockRequest = {
         json: vi.fn().mockResolvedValue(invalidData),
@@ -269,8 +275,9 @@ describe('/api/music', () => {
       };
 
       const dbError = new Error('Database constraint violation');
+      // @ts-expect-error - Vitest mock typing issue
       mockPrisma.music.create.mockRejectedValue(dbError);
-      mockNextResponse.json.mockReturnValue(new Response() as unknown as Response);
+      mockNextResponse.json.mockReturnValue({} as NextResponse);
 
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -312,8 +319,9 @@ describe('/api/music', () => {
         links: [],
       };
 
+      // @ts-expect-error - Vitest mock typing issue
       mockPrisma.music.create.mockResolvedValue(mockCreatedMusic);
-      mockNextResponse.json.mockReturnValue(new Response() as unknown as Response);
+      mockNextResponse.json.mockReturnValue({} as NextResponse);
 
       const mockRequest = {
         json: vi.fn().mockResolvedValue(minimalData),
@@ -347,7 +355,7 @@ describe('/api/music', () => {
         json: vi.fn().mockRejectedValue(new Error('Invalid JSON')),
       } as unknown as NextRequest;
 
-      mockNextResponse.json.mockReturnValue(new Response() as unknown as Response);
+      mockNextResponse.json.mockReturnValue({} as NextResponse);
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       // Act

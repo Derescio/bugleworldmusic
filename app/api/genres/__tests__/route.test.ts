@@ -36,8 +36,9 @@ describe('/api/genres', () => {
         { id: 3, name: 'R&B', createdAt: new Date(), updatedAt: new Date() },
       ];
 
+      // @ts-expect-error - Vitest mock typing issue
       mockPrisma.genre.findMany.mockResolvedValue(mockGenres);
-      mockNextResponse.json.mockReturnValue(new Response() as unknown as Response);
+      mockNextResponse.json.mockReturnValue({} as NextResponse);
 
       // Act
       await GET();
@@ -54,8 +55,9 @@ describe('/api/genres', () => {
     it('should handle database errors gracefully', async () => {
       // Arrange
       const dbError = new Error('Database connection failed');
+      // @ts-expect-error - Vitest mock typing issue
       mockPrisma.genre.findMany.mockRejectedValue(dbError);
-      mockNextResponse.json.mockReturnValue(new Response() as unknown as Response);
+      mockNextResponse.json.mockReturnValue({} as NextResponse);
 
       // Spy on console.error
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -75,8 +77,9 @@ describe('/api/genres', () => {
 
     it('should return empty array when no genres exist', async () => {
       // Arrange
+      // @ts-expect-error - Vitest mock typing issue
       mockPrisma.genre.findMany.mockResolvedValue([]);
-      mockNextResponse.json.mockReturnValue(new Response() as unknown as Response);
+      mockNextResponse.json.mockReturnValue({} as NextResponse);
 
       // Act
       await GET();

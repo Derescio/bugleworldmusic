@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi, expect } from 'vitest';
 import { NextRequest } from 'next/server';
 
 /**
@@ -8,7 +8,10 @@ import { NextRequest } from 'next/server';
 /**
  * Creates a mock NextRequest with the specified URL and options
  */
-export function createMockRequest(url: string, options: RequestInit = {}): NextRequest {
+export function createMockRequest(
+  url: string,
+  options: Omit<RequestInit, 'signal'> & { signal?: AbortSignal } = {}
+): NextRequest {
   return new NextRequest(url, options);
 }
 

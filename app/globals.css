@@ -1,3 +1,21 @@
+/* --- UploadThing File Input Button Fix --- */
+.ut-upload-btn input[type='file']::file-selector-button {
+  color: #171717 !important;
+  /* dark text */
+  background: #fff !important;
+  /* white background for contrast */
+  font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ut-upload-btn input[type='file']::file-selector-button {
+    color: #ededed !important;
+    /* light text for dark mode */
+    background: #171717 !important;
+    /* dark background for contrast */
+  }
+}
+
 @import 'tailwindcss';
 
 :root {
@@ -82,6 +100,7 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -90,4 +109,21 @@ body {
 
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* --- UploadThing Button & Label Color Overrides --- */
+.ut-upload-btn,
+.ut-upload-label,
+.ut-upload-btn input[type='file']::file-selector-button {
+  color: #171717 !important;
+  /* Change to your desired color */
+}
+
+/* For dark mode, override as well */
+@media (prefers-color-scheme: dark) {
+  .ut-upload-btn,
+  .ut-upload-label,
+  .ut-upload-btn input[type='file']::file-selector-button {
+    color: #ededed !important;
+  }
 }

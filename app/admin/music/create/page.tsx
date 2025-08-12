@@ -11,29 +11,17 @@ import { Textarea } from '../../../components/ui/textarea';
 import { Label } from '../../../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
 import { UploadDropzone } from '../../../lib/uploadthing';
-//port { MyUploadButton } from '../../../components/upload-button'
 
-// Form schema
+// Form schema - only validate the fields we need from the form
 const musicFormSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
   releaseDate: z.string().optional(),
-  duration: z.number().optional(),
+  duration: z.coerce.number().optional(),
   coverImageUrl: z.string().optional(),
   label: z.string().optional(),
-  genres: z.array(z.number()).optional(),
-  tags: z.array(z.number()).optional(),
-  links: z
-    .array(
-      z.object({
-        platform: z.string(),
-        url: z.string().url(),
-      })
-    )
-    .optional(),
+  isActive: z.boolean().optional(),
 });
-
-type MusicFormData = z.infer<typeof musicFormSchema>;
 
 interface Genre {
   id: number;
@@ -45,12 +33,20 @@ interface Tag {
   name: string;
 }
 
+interface Track {
+  title: string;
+  duration?: number | undefined;
+  position: number;
+}
+
 export default function CreateMusicPage() {
   const [genres, setGenres] = useState<Genre[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [links, setLinks] = useState([{ platform: '', url: '' }]);
+  const [isActive, setIsActive] = useState(true);
+  const [tracks, setTracks] = useState<Track[]>([{ title: '', duration: undefined, position: 0 }]);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
 
@@ -59,8 +55,12 @@ export default function CreateMusicPage() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<MusicFormData>({
+  } = useForm({
     resolver: zodResolver(musicFormSchema),
+    defaultValues: {
+      title: '',
+      isActive: true,
+    },
   });
 
   // Fetch genres and tags on component mount
@@ -99,7 +99,7 @@ export default function CreateMusicPage() {
     setLinks(updatedLinks);
   };
 
-  const onSubmit = async (data: MusicFormData) => {
+  const onSubmit = async (data: z.infer<typeof musicFormSchema>) => {
     setIsLoading(true);
 
     try {
@@ -110,7 +110,20 @@ export default function CreateMusicPage() {
         genres: selectedGenres,
         tags: selectedTags,
         links: links.filter(link => link.platform && link.url),
+        isActive,
+        tracks: showTracklist
+          ? tracks
+              .filter(t => t.title.trim())
+              .map((track, index) => ({
+                title: track.title.trim(),
+                duration: track.duration || undefined,
+                position: index,
+              }))
+          : undefined,
       };
+
+      console.log('Submitting form data:', formData);
+      console.log('Tracks being sent:', formData.tracks);
 
       const response = await fetch('/api/music', {
         method: 'POST',
@@ -124,11 +137,16 @@ export default function CreateMusicPage() {
         const result = await response.json();
         console.log('Music created:', result);
         alert('Music created successfully!');
-        reset();
+        reset({
+          title: '',
+          isActive: true,
+        });
         setSelectedGenres([]);
         setSelectedTags([]);
         setLinks([{ platform: '', url: '' }]);
         setUploadedImageUrl('');
+        setIsActive(true);
+        setTracks([{ title: '', duration: undefined, position: 0 }]);
       } else {
         const error = await response.json();
         console.error('Error creating music:', error);
@@ -141,6 +159,12 @@ export default function CreateMusicPage() {
       setIsLoading(false);
     }
   };
+
+  // Helper: show tracklist if EP or Album tag is selected
+  const epOrAlbumTagNames = ['EP', 'Album'];
+  const showTracklist = tags
+    .filter(tag => selectedTags.includes(tag.id))
+    .some(tag => epOrAlbumTagNames.includes(tag.name));
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -181,6 +205,22 @@ export default function CreateMusicPage() {
                   {...register('duration', { valueAsNumber: true })}
                   placeholder="Track length in seconds"
                 />
+              </div>
+
+              {/* isActive toggle */}
+              <div className="space-y-2 md:col-span-2 flex items-center gap-4">
+                <Label htmlFor="isActive">Active</Label>
+                <input
+                  id="isActive"
+                  type="checkbox"
+                  {...register('isActive')}
+                  checked={isActive}
+                  onChange={e => setIsActive(e.target.checked)}
+                  className="h-5 w-5 accent-green-600"
+                />
+                <span className="text-sm text-gray-500">
+                  (Toggle to set if this music is active/visible)
+                </span>
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -306,6 +346,73 @@ export default function CreateMusicPage() {
                 ))}
               </div>
             </div>
+
+            {/* Tracklist form for EP/Album */}
+            {showTracklist && (
+              <div className="mt-8">
+                <Label className="text-lg font-semibold mb-2">Tracklist</Label>
+                <p className="text-sm text-gray-600 mb-4">
+                  Add tracks for this EP/Album. Drag to reorder if needed.
+                </p>
+                {tracks.map((track, idx) => (
+                  <div key={idx} className="flex gap-2 items-end mb-2">
+                    <div className="flex-1">
+                      <Label htmlFor={`track-title-${idx}`}>Title</Label>
+                      <Input
+                        id={`track-title-${idx}`}
+                        value={track.title}
+                        onChange={e => {
+                          const updated = [...tracks];
+                          updated[idx].title = e.target.value;
+                          setTracks(updated);
+                        }}
+                        placeholder={`Track ${idx + 1} title`}
+                      />
+                    </div>
+                    <div className="w-32">
+                      <Label htmlFor={`track-duration-${idx}`}>Duration (sec)</Label>
+                      <Input
+                        id={`track-duration-${idx}`}
+                        type="number"
+                        value={track.duration ? String(track.duration) : ''}
+                        onChange={e => {
+                          const updated = [...tracks];
+                          const val = e.target.value;
+                          updated[idx] = {
+                            ...updated[idx],
+                            duration: val === '' ? undefined : Number(val),
+                            position: idx,
+                          };
+                          setTracks(updated);
+                        }}
+                        placeholder="e.g. 210"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setTracks(tracks.filter((_, i) => i !== idx))}
+                      disabled={tracks.length === 1}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-2"
+                  onClick={() =>
+                    setTracks([
+                      ...tracks,
+                      { title: '', duration: undefined, position: tracks.length },
+                    ])
+                  }
+                >
+                  Add Track
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="links" className="space-y-4">

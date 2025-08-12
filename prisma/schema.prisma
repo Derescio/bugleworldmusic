@@ -36,6 +36,7 @@ model Music {
   duration      Int? // Duration in seconds
   coverImageUrl String?   @map("cover_image_url")
   label         String?
+  isActive      Boolean   @default(true) // Indicates if the music is active/visible
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
@@ -43,8 +44,22 @@ model Music {
   genres MusicGenre[]
   tags   MusicTag[]
   links  Link[]
+  tracks Track[] // New relation for tracklist
 
   @@map("music")
+}
+
+// Track table for singles and albums
+model Track {
+  id       Int    @id @default(autoincrement())
+  musicId  String @map("music_id")
+  title    String
+  duration Int? // Duration in seconds
+  position Int // Track number/order in album/EP (0-based index)
+  music    Music  @relation(fields: [musicId], references: [id], onDelete: Cascade)
+
+  @@unique([musicId, position])
+  @@map("tracks")
 }
 
 // Genres table
@@ -96,4 +111,28 @@ model Link {
   music    Music  @relation(fields: [musicId], references: [id], onDelete: Cascade)
 
   @@map("links")
+}
+
+model Merchandise {
+  id          Int      @id @default(autoincrement())
+  name        String
+  price       Decimal  @db.Decimal(10, 2) // Up to 99999999.99
+  description String?
+  colors      String[] // now an array
+  sizes       String[] // now an array
+  imageUrls   String[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Show {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  country   String
+  city      String
+  venue     String
+  ticketUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

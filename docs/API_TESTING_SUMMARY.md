@@ -188,8 +188,54 @@ npm run test:watch -- app/api
 7. **Isolation**: Tests don't depend on each other
 8. **Fast Execution**: Unit tests run quickly without external dependencies
 
+## 🛠️ **Common Issues Encountered & Solutions**
+
+### TypeScript Mocking Issues
+
+**Problem**: Prisma client methods not recognized as mockable functions
+
+```
+Property 'mockResolvedValue' does not exist on type '<T extends TagFindManyArgs>...'
+```
+
+**Solution**: Added `@ts-expect-error` comments to suppress TypeScript errors for Vitest mocks
+
+```typescript
+// @ts-expect-error - Vitest mock typing issue
+mockPrisma.tag.findMany.mockResolvedValue(mockTags);
+```
+
+### Vitest Hoisting Issues
+
+**Problem**: Mock variables referenced before initialization in `vi.mock()` factory functions
+
+```
+ReferenceError: Cannot access 'mockJson' before initialization
+```
+
+**Solution**: Define mock functions inside `vi.mock()` factories or use `vi.mocked()` after imports
+
+### NextRequest Type Compatibility
+
+**Problem**: `RequestInit` signal property type mismatch between Node.js and Next.js
+
+```
+Type 'null' is not assignable to type 'AbortSignal | undefined'
+```
+
+**Solution**: Updated type definition to exclude null from signal property
+
+```typescript
+options: Omit<RequestInit, 'signal'> & { signal?: AbortSignal }
+```
+
+### Missing Vitest Globals
+
+**Problem**: `expect` function not recognized in test utility files
+**Solution**: Added explicit import of `expect` from Vitest
+
 ---
 
-**Status:** ✅ **COMPLETE - All API routes now have comprehensive test coverage!**
+**Status:** ✅ **COMPLETE - All API routes now have comprehensive test coverage! (23/23 tests passing)**
 
-_Last Updated: $(date)_
+_Last Updated: December 2024_

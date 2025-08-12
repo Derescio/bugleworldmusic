@@ -3,6 +3,8 @@
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import MusicManagement from './components/MusicManagement';
+import ShowsPage from './shows/page';
+import MerchandisePage from './merch/page';
 
 export default function AdminDashboard() {
   return (
@@ -11,7 +13,7 @@ export default function AdminDashboard() {
         <div className="sm:flex-auto">
           <h1 className="text-2xl font-semibold leading-6 text-gray-900">Admin Dashboard</h1>
           <p className="mt-2 text-sm text-gray-700">
-            Manage your music catalog, merchandise, and digital content.
+            Manage your music catalog, merchandise, tours, and digital content.
           </p>
         </div>
       </div>
@@ -26,6 +28,10 @@ export default function AdminDashboard() {
             <span>🛍️</span>
             Merchandise
           </TabsTrigger>
+          <TabsTrigger value="shows" className="flex items-center gap-2">
+            <span>🎤</span>
+            Shows and Tours
+          </TabsTrigger>
           <TabsTrigger value="pdf" className="flex items-center gap-2">
             <span>📄</span>
             Digital Files
@@ -37,16 +43,11 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="merch" className="space-y-6">
-          <div className="bg-white shadow rounded-lg p-6">
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🛍️</span>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Merchandise Management</h3>
-              <p className="text-gray-500 mb-6">Create and manage your merchandise catalog</p>
-              <Button disabled>Coming Soon - Create Merch</Button>
-            </div>
-          </div>
+          <MerchandisePage />
+        </TabsContent>
+
+        <TabsContent value="shows" className="space-y-6">
+          <ShowsPage />
         </TabsContent>
 
         <TabsContent value="pdf" className="space-y-6">

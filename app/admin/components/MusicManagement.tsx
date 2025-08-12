@@ -300,12 +300,16 @@ export default function MusicManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          Edit
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          View
-                        </Button>
+                        <Link href={`/admin/music/${track.id}/edit`}>
+                          <Button variant="outline" size="sm">
+                            Edit
+                          </Button>
+                        </Link>
+                        {/* <Link href={`/admin/music/${track.id}`}>
+                          <Button variant="outline" size="sm">
+                            View
+                          </Button>
+                        </Link> */}
                       </div>
                     </td>
                   </tr>

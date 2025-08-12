@@ -127,3 +127,20 @@ body {
     color: #ededed !important;
   }
 }
+
+/* Target UploadThing's button by data attribute */
+button[data-ut-element='button'] {
+  color: #171717 !important;
+  /* Change text color */
+  background: #46dd53 !important;
+  /* Change background color */
+  border: none !important;
+  padding: 0.5rem 1rem !important;
+}
+
+/* Optional: Change color for disabled state */
+button[data-ut-element='button']:disabled {
+  background: #1e293b !important;
+  color: white !important;
+  padding: 0.5rem 1rem !important;
+}

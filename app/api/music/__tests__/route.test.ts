@@ -42,11 +42,13 @@ describe('/api/music', () => {
           duration: 180,
           coverImageUrl: 'https://example.com/cover.jpg',
           label: 'Test Label',
+          isActive: true,
           createdAt: new Date(),
           updatedAt: new Date(),
           genres: [{ genre: { id: 1, name: 'Hip Hop' } }],
           tags: [{ tag: { id: 1, name: 'Conscious' } }],
           links: [{ id: 1, platform: 'Spotify', url: 'https://spotify.com/track/1' }],
+          tracks: [{ id: 1, title: 'Track 1', duration: 180, position: 0, musicId: '1' }],
         },
       ];
 
@@ -79,6 +81,11 @@ describe('/api/music', () => {
             },
           },
           links: true,
+          tracks: {
+            orderBy: {
+              position: 'asc',
+            },
+          },
         },
         orderBy: {
           createdAt: 'desc',
@@ -168,20 +175,28 @@ describe('/api/music', () => {
         duration: 200,
         coverImageUrl: 'https://example.com/cover.jpg',
         label: 'New Label',
+        isActive: true,
         genres: [1, 2],
         tags: [1],
         links: [{ platform: 'Spotify', url: 'https://spotify.com/track/new' }],
+        tracks: [{ title: 'Track 1', duration: 200, position: 0 }],
       };
 
       const mockCreatedMusic = {
         id: 2,
-        ...mockMusicData,
+        title: mockMusicData.title,
+        description: mockMusicData.description,
         releaseDate: new Date(mockMusicData.releaseDate),
+        duration: mockMusicData.duration,
+        coverImageUrl: mockMusicData.coverImageUrl,
+        label: mockMusicData.label,
+        isActive: mockMusicData.isActive,
         createdAt: new Date(),
         updatedAt: new Date(),
         genres: [{ genre: { id: 1, name: 'Hip Hop' } }],
         tags: [{ tag: { id: 1, name: 'Conscious' } }],
         links: mockMusicData.links,
+        tracks: mockMusicData.tracks,
       };
 
       // @ts-expect-error - Vitest mock typing issue
@@ -204,6 +219,7 @@ describe('/api/music', () => {
           duration: mockMusicData.duration,
           coverImageUrl: mockMusicData.coverImageUrl,
           label: mockMusicData.label,
+          isActive: mockMusicData.isActive,
           genres: {
             create: mockMusicData.genres.map(genreId => ({
               genre: { connect: { id: genreId } },
@@ -216,6 +232,13 @@ describe('/api/music', () => {
           },
           links: {
             create: mockMusicData.links,
+          },
+          tracks: {
+            create: mockMusicData.tracks.map(track => ({
+              title: track.title,
+              duration: track.duration,
+              position: track.position,
+            })),
           },
         },
         include: {
@@ -230,7 +253,75 @@ describe('/api/music', () => {
             },
           },
           links: true,
+          tracks: true,
         },
+      });
+
+      expect(mockNextResponse.json).toHaveBeenCalledWith(mockCreatedMusic, { status: 201 });
+    });
+
+    it('should create music with tracks when provided', async () => {
+      // Arrange
+      const mockMusicData = {
+        title: 'Album with Tracks',
+        description: 'An album containing multiple tracks',
+        tracks: [
+          { title: 'Intro', duration: 60, position: 0 },
+          { title: 'Main Song', duration: 180, position: 1 },
+          { title: 'Outro', duration: 45, position: 2 },
+        ],
+      };
+
+      const mockCreatedMusic = {
+        id: 3,
+        title: mockMusicData.title,
+        description: mockMusicData.description,
+        releaseDate: null,
+        duration: null,
+        coverImageUrl: null,
+        label: null,
+        isActive: undefined,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        genres: [],
+        tags: [],
+        links: [],
+        tracks: mockMusicData.tracks,
+      };
+
+      // @ts-expect-error - Vitest mock typing issue
+      mockPrisma.music.create.mockResolvedValue(mockCreatedMusic);
+      mockNextResponse.json.mockReturnValue({} as NextResponse);
+
+      const mockRequest = {
+        json: vi.fn().mockResolvedValue(mockMusicData),
+      } as unknown as NextRequest;
+
+      // Act
+      await POST(mockRequest);
+
+      // Assert
+      expect(mockPrisma.music.create).toHaveBeenCalledWith({
+        data: {
+          title: mockMusicData.title,
+          description: mockMusicData.description,
+          releaseDate: null,
+          duration: undefined,
+          coverImageUrl: undefined,
+          label: undefined,
+          isActive: undefined,
+          genres: undefined,
+          tags: undefined,
+          links: undefined,
+          tracks: {
+            create: mockMusicData.tracks.map(track => ({
+              title: track.title,
+              duration: track.duration,
+              position: track.position,
+            })),
+          },
+        },
+        include: expect.any(Object),
       });
 
       expect(mockNextResponse.json).toHaveBeenCalledWith(mockCreatedMusic, { status: 201 });
@@ -305,18 +396,20 @@ describe('/api/music', () => {
       };
 
       const mockCreatedMusic = {
-        id: 3,
+        id: 4,
         title: minimalData.title,
         description: null,
         releaseDate: null,
         duration: null,
         coverImageUrl: null,
         label: null,
+        isActive: undefined,
         createdAt: new Date(),
         updatedAt: new Date(),
         genres: [],
         tags: [],
         links: [],
+        tracks: [],
       };
 
       // @ts-expect-error - Vitest mock typing issue
@@ -339,9 +432,11 @@ describe('/api/music', () => {
           duration: undefined,
           coverImageUrl: undefined,
           label: undefined,
+          isActive: undefined,
           genres: undefined,
           tags: undefined,
           links: undefined,
+          tracks: undefined,
         },
         include: expect.any(Object),
       });

@@ -10,6 +10,7 @@ const musicSchema = z.object({
   duration: z.number().optional(),
   coverImageUrl: z.string().optional(),
   label: z.string().optional(),
+  isActive: z.boolean().optional(),
   genres: z.array(z.number()).optional(),
   tags: z.array(z.number()).optional(),
   links: z
@@ -17,6 +18,15 @@ const musicSchema = z.object({
       z.object({
         platform: z.string(),
         url: z.string().url(),
+      })
+    )
+    .optional(),
+  tracks: z
+    .array(
+      z.object({
+        title: z.string().min(1, 'Track title is required'),
+        duration: z.number().optional(),
+        position: z.number(),
       })
     )
     .optional(),
@@ -45,6 +55,11 @@ export async function GET(request: NextRequest) {
           },
         },
         links: true,
+        tracks: {
+          orderBy: {
+            position: 'asc',
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -72,6 +87,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log('Received request body:', body);
+    console.log('Tracks in request:', body.tracks);
     const validatedData = musicSchema.parse(body);
 
     const music = await prisma.music.create({
@@ -82,6 +99,7 @@ export async function POST(request: NextRequest) {
         duration: validatedData.duration,
         coverImageUrl: validatedData.coverImageUrl,
         label: validatedData.label,
+        isActive: validatedData.isActive,
         genres: validatedData.genres
           ? {
               create: validatedData.genres.map(genreId => ({
@@ -101,6 +119,16 @@ export async function POST(request: NextRequest) {
               create: validatedData.links,
             }
           : undefined,
+        tracks:
+          validatedData.tracks && validatedData.tracks.length > 0
+            ? {
+                create: validatedData.tracks.map(track => ({
+                  title: track.title,
+                  duration: track.duration,
+                  position: track.position,
+                })),
+              }
+            : undefined,
       },
       include: {
         genres: {
@@ -114,6 +142,7 @@ export async function POST(request: NextRequest) {
           },
         },
         links: true,
+        tracks: true,
       },
     });
 

@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X, User, LogIn, Settings, LogOut } from 'lucide-react';
 import { siteConfig } from '../../lib/config/site';
-import { Button } from '../../components/ui/button';
+import { Button } from '../ui/button';
 
 import Image from 'next/image';
 import CartButton from '../cart/CartButton';
@@ -14,23 +14,31 @@ const navigation = [
   { name: 'Music', href: '/music' },
   { name: 'Shows', href: '/shows' },
   { name: 'Store', href: '/store' },
-  { name: 'Gallery', href: '/gallery' },
   { name: 'Booking', href: '/booking' },
+  { name: 'Behind The Scenes', href: '/bts' },
 ];
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-
   // Mock user state - replace with actual auth logic
   const [user, setUser] = useState<{ name: string; avatar?: string; email: string } | null>(null);
+  // Track scroll for background
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogin = () => {
-    // Mock login - replace with actual auth logic
     setUser({
       name: 'John Doe',
       email: 'john@example.com',
-      avatar: '/images/Bugle_1.png', // Using existing image as placeholder
+      avatar: '/images/Bugle_1.png',
     });
   };
 
@@ -40,7 +48,9 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10  backdrop-blur-sm text-white">
+    <header
+      className={`sticky top-0 z-50 w-full border-b border-white/10 backdrop-blur-sm text-white transition-colors ${scrolled ? 'bg-gradient-to-b from-slate-900/90 via-purple-900/80 to-slate-900/90' : 'bg-transparent'}`}
+    >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center">
           {/* Mobile Layout */}
@@ -105,7 +115,7 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="transition-colors hover:text-foreground/80 text-foreground/60 font-medium"
+                  className={`transition-colors font-medium ${scrolled ? 'text-white hover:text-white/80' : 'text-foreground/60 hover:text-foreground/80'}`}
                 >
                   {item.name}
                 </Link>

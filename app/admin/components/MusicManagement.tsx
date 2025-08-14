@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '../../components/ui/button';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 
@@ -305,6 +307,33 @@ export default function MusicManagement() {
                             Edit
                           </Button>
                         </Link>
+                        <ConfirmDialog
+                          title={`Delete '${track.title}'?`}
+                          description="This action cannot be undone. This will permanently delete this track and all its data."
+                          confirmLabel="Delete"
+                          cancelLabel="Cancel"
+                          trigger={
+                            <Button variant="outline" size="sm">
+                              Delete
+                            </Button>
+                          }
+                          onConfirm={async () => {
+                            try {
+                              const res = await fetch(`/api/music/${track.id}`, {
+                                method: 'DELETE',
+                              });
+                              if (res.ok) {
+                                setMusic(prev => prev.filter(m => m.id !== track.id));
+                                toast.success(`'${track.title}' deleted successfully.`);
+                              } else {
+                                const data = await res.json();
+                                toast.error(data.error || 'Failed to delete track.');
+                              }
+                            } catch {
+                              toast.error('Failed to delete track.');
+                            }
+                          }}
+                        />
                         {/* <Link href={`/admin/music/${track.id}`}>
                           <Button variant="outline" size="sm">
                             View

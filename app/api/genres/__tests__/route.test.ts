@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { GET } from '../route';
 import { prisma } from '../../../lib/prisma';
 
+//npx vitest app/api/genres/__tests__/route.test.ts
+
 // Mock Prisma
 vi.mock('../../../lib/prisma', () => ({
   prisma: {

@@ -51,13 +51,13 @@ export default function AlbumGallery() {
             <p className="text-white/60 text-sm">
               Scroll horizontally or drag to explore albums • Click anywhere to view all music
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex  flex-col sm:flex-row gap-4 justify-center items-center">
               <Button
                 asChild
                 size="lg"
-                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-8 py-3 shadow-xl"
+                className=" bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-8 py-3 shadow-xl"
               >
-                <Link href="/music">
+                <Link href="/music" className="flex items-center ">
                   <Music className="mr-2 h-5 w-5" />
                   View All Music
                 </Link>

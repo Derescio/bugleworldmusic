@@ -5,6 +5,7 @@ import { Header } from './components/layout/header';
 import { Footer } from './components/layout/footer';
 import { siteConfig } from './lib/config/site';
 import CartSidebar from './components/cart/CartSidebar';
+import { Toaster } from 'sonner';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -67,6 +68,7 @@ export default function RootLayout({
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
+          <Toaster richColors position="top-center" />
           <CartSidebar />
         </div>
       </body>

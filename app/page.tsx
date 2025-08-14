@@ -90,7 +90,7 @@ export default function Home() {
 
           <div className="text-center">
             <Button variant="outline" asChild>
-              <Link href="/shows">
+              <Link href="/shows" className="flex items-center justify-center">
                 <Calendar className="mr-2 h-4 w-4" />
                 View All Shows
               </Link>

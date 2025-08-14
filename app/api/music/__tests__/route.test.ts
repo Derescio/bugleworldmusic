@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GET, POST } from '../route';
 import { prisma } from '../../../lib/prisma';
 
+//npx vitest watch app/api/music/__tests__/route.test.ts
+//app\api\music\__tests__\route.test.ts
+
 // Mock Prisma
 vi.mock('../../../lib/prisma', () => ({
   prisma: {

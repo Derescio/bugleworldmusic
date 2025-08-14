@@ -11,6 +11,7 @@ import { Textarea } from '../../../components/ui/textarea';
 import { Label } from '../../../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
 import { UploadDropzone } from '../../../lib/uploadthing';
+import { toast } from 'sonner';
 
 // Form schema - only validate the fields we need from the form
 const musicFormSchema = z.object({
@@ -134,9 +135,9 @@ export default function CreateMusicPage() {
       });
 
       if (response.ok) {
-        const result = await response.json();
-        console.log('Music created:', result);
-        alert('Music created successfully!');
+        await response.json();
+        //console.log('Music created');
+        toast.success('Music created successfully!');
         reset({
           title: '',
           isActive: true,

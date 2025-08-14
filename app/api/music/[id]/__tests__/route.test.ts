@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GET, PUT } from '../route';
 import { prisma } from '../../../../lib/prisma';
 
+//Execute
+//npx vitest watch app/api/music/[id]/__tests__/route.test.ts
+
 // Mock Prisma
 vi.mock('../../../../lib/prisma', () => ({
   prisma: {
@@ -141,17 +144,23 @@ describe('/api/music/[id]', () => {
         label: 'Updated Label',
       };
 
-      const mockUpdatedMusic = {
+      const mockUpdatedMusicWithRelations = {
         id: '1',
         ...updateData,
         releaseDate: new Date(updateData.releaseDate),
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
+        genres: [{ genre: { id: 1, name: 'Hip Hop' } }],
+        tags: [{ tag: { id: 1, name: 'Conscious' } }],
+        links: [{ id: 1, platform: 'Spotify', url: 'https://spotify.com/track/1' }],
+        tracks: [{ id: 1, title: 'Track 1', duration: 180, position: 0, musicId: '1' }],
       };
 
       // @ts-expect-error - Vitest mock typing issue
-      mockPrisma.music.update.mockResolvedValue(mockUpdatedMusic);
+      mockPrisma.music.update.mockResolvedValue({}); // Not used in handler's response
+      // @ts-expect-error - Vitest mock typing issue
+      mockPrisma.music.findUnique.mockResolvedValue(mockUpdatedMusicWithRelations);
       mockNextResponse.json.mockReturnValue({} as NextResponse);
 
       const mockRequest = {
@@ -172,10 +181,11 @@ describe('/api/music/[id]', () => {
           duration: updateData.duration,
           coverImageUrl: updateData.coverImageUrl,
           label: updateData.label,
+          isActive: undefined,
         },
       });
 
-      expect(mockNextResponse.json).toHaveBeenCalledWith(mockUpdatedMusic);
+      expect(mockNextResponse.json).toHaveBeenCalledWith(mockUpdatedMusicWithRelations);
     });
 
     it('should handle validation errors', async () => {

@@ -5,27 +5,53 @@ import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '@/app/components/ui/button';
-import { Input } from '@/app/components/ui/input';
-import { Textarea } from '@/app/components/ui/textarea';
-import { Label } from '@/app/components/ui/label';
-
+import Image from 'next/image';
+import { Button } from '../../../../components/ui/button';
+import { Input } from '../../../../components/ui/input';
+import { Textarea } from '../../../../components/ui/textarea';
+import { Label } from '../../../../components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../components/ui/tabs';
+//import { UploadDropzone } from '../../../lib/uploadthing';
+import { UploadDropzone } from '../../../../lib/uploadthing';
 const musicFormSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
   releaseDate: z.string().optional(),
-  duration: z.number().optional(),
+  duration: z.coerce.number().optional(),
   coverImageUrl: z.string().optional(),
   label: z.string().optional(),
+  isActive: z.boolean().optional(),
 });
 
-type MusicFormData = z.infer<typeof musicFormSchema>;
+interface Genre {
+  id: number;
+  name: string;
+}
+
+interface Tag {
+  id: number;
+  name: string;
+}
+
+interface Track {
+  title: string;
+  duration?: number | undefined;
+  position: number;
+}
 
 export default function EditMusicPage() {
   const router = useRouter();
   const params = useParams();
   const { id } = params;
-  const [loading, setLoading] = useState(true);
+  const [genres, setGenres] = useState<Genre[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
+  const [selectedTags, setSelectedTags] = useState<number[]>([]);
+  const [links, setLinks] = useState([{ platform: '', url: '' }]);
+  const [isActive, setIsActive] = useState(true);
+  const [tracks, setTracks] = useState<Track[]>([{ title: '', duration: undefined, position: 0 }]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
   const [error, setError] = useState('');
 
   const {
@@ -33,91 +59,456 @@ export default function EditMusicPage() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<MusicFormData>({
+  } = useForm({
     resolver: zodResolver(musicFormSchema),
+    defaultValues: {
+      title: '',
+      isActive: true,
+    },
   });
 
+  // Fetch genres, tags, and music data on mount
   useEffect(() => {
-    const fetMusicById = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`/api/music/${id}`);
-        if (!res.ok) throw new Error('Failed to fetch music');
-        const data = await res.json();
-        reset({
-          title: data.title,
-          description: data.description || '',
-          releaseDate: data.releaseDate || '',
-          duration: data.duration || undefined,
-          coverImageUrl: data.coverImageUrl || '',
-          label: data.label || '',
-        });
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        setError(errorMessage);
+        const [genresRes, tagsRes, musicRes] = await Promise.all([
+          fetch('/api/genres'),
+          fetch('/api/tags'),
+          fetch(`/api/music/${id}`),
+        ]);
+
+        if (genresRes.ok) {
+          const genresData = await genresRes.json();
+          setGenres(genresData);
+        }
+        if (tagsRes.ok) {
+          const tagsData = await tagsRes.json();
+          setTags(tagsData);
+        }
+        if (musicRes.ok) {
+          const musicData = await musicRes.json();
+          reset({
+            title: musicData.title,
+            description: musicData.description || '',
+            releaseDate: musicData.releaseDate ? musicData.releaseDate.slice(0, 10) : '',
+            duration: musicData.duration || undefined,
+            coverImageUrl: musicData.coverImageUrl || '',
+            label: musicData.label || '',
+            isActive: musicData.isActive ?? true,
+          });
+          setIsActive(musicData.isActive ?? true);
+          setUploadedImageUrl(musicData.coverImageUrl || '');
+          setSelectedGenres(
+            musicData.genres?.map((g: { genreId?: number; id: number }) => g.genreId || g.id) || []
+          );
+          setSelectedTags(
+            musicData.tags?.map((t: { tagId?: number; id: number }) => t.tagId || t.id) || []
+          );
+          setLinks(
+            musicData.links && musicData.links.length > 0
+              ? musicData.links.map((l: { platform: string; url: string }) => ({
+                  platform: l.platform,
+                  url: l.url,
+                }))
+              : [{ platform: '', url: '' }]
+          );
+          setTracks(
+            musicData.tracks && musicData.tracks.length > 0
+              ? musicData.tracks.map(
+                  (t: { title: string; duration?: number; position?: number }, idx: number) => ({
+                    title: t.title,
+                    duration: t.duration,
+                    position: t.position ?? idx,
+                  })
+                )
+              : [{ title: '', duration: undefined, position: 0 }]
+          );
+        } else {
+          setError('Failed to fetch music');
+        }
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message || 'Unknown error');
+        } else {
+          setError('Unknown error');
+        }
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    fetMusicById();
+    fetchData();
   }, [id, reset]);
 
-  const onSubmit = async (formData: MusicFormData) => {
-    setLoading(true);
+  const addLinkField = () => {
+    setLinks([...links, { platform: '', url: '' }]);
+  };
+
+  const removeLinkField = (index: number) => {
+    setLinks(links.filter((_, i) => i !== index));
+  };
+
+  const updateLink = (index: number, field: 'platform' | 'url', value: string) => {
+    const updatedLinks = links.map((link, i) => (i === index ? { ...link, [field]: value } : link));
+    setLinks(updatedLinks);
+  };
+
+  const onSubmit = async (data: z.infer<typeof musicFormSchema>) => {
+    setIsLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/music/${id}`, {
+      const formData = {
+        ...data,
+        duration: data.duration ? Number(data.duration) : undefined,
+        coverImageUrl: uploadedImageUrl || data.coverImageUrl,
+        genres: selectedGenres,
+        tags: selectedTags,
+        links: links.filter(link => link.platform && link.url),
+        isActive,
+        tracks: showTracklist
+          ? tracks
+              .filter(t => t.title.trim())
+              .map((track, index) => ({
+                title: track.title.trim(),
+                duration: track.duration || undefined,
+                position: index,
+              }))
+          : undefined,
+      };
+
+      const response = await fetch(`/api/music/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(formData),
       });
-      if (!res.ok) throw new Error('Failed to update music');
-      router.push('/admin/music');
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
+
+      if (response.ok) {
+        router.push('/admin');
+      } else {
+        const error = await response.json();
+        setError(error.error || 'Unknown error');
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || 'Unknown error');
+      } else {
+        setError('Unknown error');
+      }
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  if (loading) return <div className="p-8 text-gray-500">Loading...</div>;
+  // Helper: show tracklist if EP or Album tag is selected
+  const epOrAlbumTagNames = ['EP', 'Album'];
+  const showTracklist = tags
+    .filter(tag => selectedTags.includes(tag.id))
+    .some(tag => epOrAlbumTagNames.includes(tag.name));
+
+  if (isLoading) return <div className="p-8 text-gray-500">Loading...</div>;
   if (error) return <div className="p-8 text-red-500">{error}</div>;
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Edit Music</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div>
-          <Label htmlFor="title">Title *</Label>
-          <Input id="title" {...register('title')} />
-          {errors.title && <p className="text-sm text-red-600">{errors.title.message}</p>}
-        </div>
-        <div>
-          <Label htmlFor="label">Label</Label>
-          <Input id="label" {...register('label')} />
-        </div>
-        <div>
-          <Label htmlFor="releaseDate">Release Date</Label>
-          <Input id="releaseDate" type="date" {...register('releaseDate')} />
-        </div>
-        <div>
-          <Label htmlFor="duration">Duration (seconds)</Label>
-          <Input id="duration" type="number" {...register('duration', { valueAsNumber: true })} />
-        </div>
-        <div>
-          <Label htmlFor="coverImageUrl">Cover Image URL</Label>
-          <Input id="coverImageUrl" {...register('coverImageUrl')} />
-        </div>
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Textarea id="description" {...register('description')} rows={4} />
-        </div>
-        <div className="flex gap-4 justify-end">
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-3xl font-bold mb-8">Edit Music</h1>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl">
+        <Tabs defaultValue="general" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="general">General Info</TabsTrigger>
+            <TabsTrigger value="genres">Genres</TabsTrigger>
+            <TabsTrigger value="tags">Tags</TabsTrigger>
+            <TabsTrigger value="links">Platform Links</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="general" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title *</Label>
+                <Input id="title" {...register('title')} placeholder="Enter song title" />
+                {errors.title && <p className="text-sm text-red-600">{errors.title.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="label">Label</Label>
+                <Input id="label" {...register('label')} placeholder="Record label" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="releaseDate">Release Date</Label>
+                <Input id="releaseDate" type="date" {...register('releaseDate')} />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="duration">Duration (seconds)</Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  {...register('duration', { valueAsNumber: true })}
+                  placeholder="Track length in seconds"
+                />
+              </div>
+
+              {/* isActive toggle */}
+              <div className="space-y-2 md:col-span-2 flex items-center gap-4">
+                <Label htmlFor="isActive">Active</Label>
+                <input
+                  id="isActive"
+                  type="checkbox"
+                  {...register('isActive')}
+                  checked={isActive}
+                  onChange={e => setIsActive(e.target.checked)}
+                  className="h-5 w-5 accent-green-600"
+                />
+                <span className="text-sm text-gray-500">
+                  (Toggle to set if this music is active/visible)
+                </span>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label>Cover Image</Label>
+                <div className="space-y-4">
+                  {uploadedImageUrl ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-4">
+                        <Image
+                          src={uploadedImageUrl}
+                          alt="Uploaded cover"
+                          className="h-20 w-20 rounded-md object-cover"
+                          width={80}
+                          height={80}
+                        />
+                        <div>
+                          <p className="text-sm text-green-600 font-medium">
+                            ✓ Image uploaded successfully
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setUploadedImageUrl('')}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <UploadDropzone
+                        endpoint="imageUploader"
+                        onClientUploadComplete={res => {
+                          if (res?.[0]) {
+                            setUploadedImageUrl(res[0].url);
+                          }
+                        }}
+                        onUploadError={(error: Error) => {
+                          alert(`Upload Error: ${error.message}`);
+                        }}
+                      />
+                      <div className="text-center text-sm text-gray-500">
+                        Or enter a URL manually:
+                      </div>
+                      <Input
+                        {...register('coverImageUrl')}
+                        placeholder="https://example.com/cover.jpg"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  {...register('description')}
+                  placeholder="Song description..."
+                  rows={4}
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="genres" className="space-y-4">
+            <div>
+              <Label className="text-lg font-semibold">Select Genres</Label>
+              <p className="text-sm text-gray-600 mb-4">
+                Choose all applicable genres for this track
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {genres.map(genre => (
+                  <label
+                    key={genre.id}
+                    className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedGenres.includes(genre.id)}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          setSelectedGenres([...selectedGenres, genre.id]);
+                        } else {
+                          setSelectedGenres(selectedGenres.filter(id => id !== genre.id));
+                        }
+                      }}
+                      className="rounded"
+                    />
+                    <span>{genre.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="tags" className="space-y-4">
+            <div>
+              <Label className="text-lg font-semibold">Select Tags</Label>
+              <p className="text-sm text-gray-600 mb-4">Choose the release type and other tags</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {tags.map(tag => (
+                  <label
+                    key={tag.id}
+                    className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedTags.includes(tag.id)}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          setSelectedTags([...selectedTags, tag.id]);
+                        } else {
+                          setSelectedTags(selectedTags.filter(id => id !== tag.id));
+                        }
+                      }}
+                      className="rounded"
+                    />
+                    <span>{tag.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Tracklist form for EP/Album */}
+            {showTracklist && (
+              <div className="mt-8">
+                <Label className="text-lg font-semibold mb-2">Tracklist</Label>
+                <p className="text-sm text-gray-600 mb-4">
+                  Add tracks for this EP/Album. Drag to reorder if needed.
+                </p>
+                {tracks.map((track, idx) => (
+                  <div key={idx} className="flex gap-2 items-end mb-2">
+                    <div className="flex-1">
+                      <Label htmlFor={`track-title-${idx}`}>Title</Label>
+                      <Input
+                        id={`track-title-${idx}`}
+                        value={track.title}
+                        onChange={e => {
+                          const updated = [...tracks];
+                          updated[idx].title = e.target.value;
+                          setTracks(updated);
+                        }}
+                        placeholder={`Track ${idx + 1} title`}
+                      />
+                    </div>
+                    <div className="w-32">
+                      <Label htmlFor={`track-duration-${idx}`}>Duration (sec)</Label>
+                      <Input
+                        id={`track-duration-${idx}`}
+                        type="number"
+                        value={track.duration ? String(track.duration) : ''}
+                        onChange={e => {
+                          const updated = [...tracks];
+                          const val = e.target.value;
+                          updated[idx] = {
+                            ...updated[idx],
+                            duration: val === '' ? undefined : Number(val),
+                            position: idx,
+                          };
+                          setTracks(updated);
+                        }}
+                        placeholder="e.g. 210"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setTracks(tracks.filter((_, i) => i !== idx))}
+                      disabled={tracks.length === 1}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-2"
+                  onClick={() =>
+                    setTracks([
+                      ...tracks,
+                      { title: '', duration: undefined, position: tracks.length },
+                    ])
+                  }
+                >
+                  Add Track
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="links" className="space-y-4">
+            <div>
+              <Label className="text-lg font-semibold">Platform Links</Label>
+              <p className="text-sm text-gray-600 mb-4">Add links to streaming platforms</p>
+
+              {links.map((link, index) => (
+                <div key={index} className="flex gap-4 items-end">
+                  <div className="flex-1">
+                    <Label htmlFor={`platform-${index}`}>Platform</Label>
+                    <Input
+                      id={`platform-${index}`}
+                      value={link.platform}
+                      onChange={e => updateLink(index, 'platform', e.target.value)}
+                      placeholder="Spotify, YouTube, Apple Music, etc."
+                    />
+                  </div>
+                  <div className="flex-2">
+                    <Label htmlFor={`url-${index}`}>URL</Label>
+                    <Input
+                      id={`url-${index}`}
+                      value={link.url}
+                      onChange={e => updateLink(index, 'url', e.target.value)}
+                      placeholder="https://..."
+                    />
+                  </div>
+                  {links.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => removeLinkField(index)}
+                      className="mb-0"
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+              ))}
+
+              <Button type="button" variant="outline" onClick={addLinkField} className="mt-2">
+                Add Platform Link
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <div className="flex justify-end gap-4 mt-8 pt-6 border-t">
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Saving...' : 'Save Changes'}
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </form>

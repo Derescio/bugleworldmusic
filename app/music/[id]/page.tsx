@@ -139,7 +139,11 @@ export default async function MusicPage({ params }: MusicPageProps) {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {release.streamingLinks.spotify && (
                   <Button asChild className="bg-green-600 hover:bg-green-700">
-                    <Link href={release.streamingLinks.spotify} target="_blank">
+                    <Link
+                      href={release.streamingLinks.spotify}
+                      target="_blank"
+                      className="flex items-center"
+                    >
                       <Play className="h-4 w-4 mr-2" />
                       Spotify
                     </Link>
@@ -151,7 +155,11 @@ export default async function MusicPage({ params }: MusicPageProps) {
                     variant="outline"
                     className="border-white/20 text-white hover:bg-white/10"
                   >
-                    <Link href={release.streamingLinks.appleMusic} target="_blank">
+                    <Link
+                      href={release.streamingLinks.appleMusic}
+                      target="_blank"
+                      className="flex items-center"
+                    >
                       <Music className="h-4 w-4 mr-2" />
                       Apple Music
                     </Link>
@@ -159,7 +167,11 @@ export default async function MusicPage({ params }: MusicPageProps) {
                 )}
                 {release.streamingLinks.youtube && (
                   <Button asChild className="bg-red-600 hover:bg-red-700">
-                    <Link href={release.streamingLinks.youtube} target="_blank">
+                    <Link
+                      href={release.streamingLinks.youtube}
+                      target="_blank"
+                      className="flex items-center"
+                    >
                       <Play className="h-4 w-4 mr-2" />
                       YouTube
                     </Link>
@@ -171,7 +183,11 @@ export default async function MusicPage({ params }: MusicPageProps) {
                     variant="outline"
                     className="border-white/20 text-white hover:bg-white/10"
                   >
-                    <Link href={release.streamingLinks.amazonMusic} target="_blank">
+                    <Link
+                      href={release.streamingLinks.amazonMusic}
+                      target="_blank"
+                      className="flex items-center"
+                    >
                       <ExternalLink className="h-4 w-4 mr-2" />
                       Amazon Music
                     </Link>
@@ -183,7 +199,11 @@ export default async function MusicPage({ params }: MusicPageProps) {
                     variant="outline"
                     className="border-white/20 text-white hover:bg-white/10"
                   >
-                    <Link href={release.streamingLinks.tidal} target="_blank">
+                    <Link
+                      href={release.streamingLinks.tidal}
+                      target="_blank"
+                      className="flex items-center"
+                    >
                       <ExternalLink className="h-4 w-4 mr-2" />
                       Tidal
                     </Link>
@@ -223,7 +243,7 @@ export default async function MusicPage({ params }: MusicPageProps) {
                 {release.producers && (
                   <div>
                     <span className="text-white/50 text-sm">Producers: </span>
-                    <span className="text-white/80">{release.producers.join(', ')}</span>
+                    <span className="text-white/80">{release.producers.join(', ') || 'Bugle'}</span>
                   </div>
                 )}
               </div>

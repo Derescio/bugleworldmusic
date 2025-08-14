@@ -49,12 +49,20 @@ export function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full border-b border-white/10 backdrop-blur-sm text-white transition-colors ${scrolled ? 'bg-gradient-to-b from-slate-900/90 via-purple-900/80 to-slate-900/90' : 'bg-transparent'}`}
+      className={`sticky top-0 z-50 w-full border-b border-white/10 backdrop-blur-sm transition-colors
+        ${
+          scrolled
+            ? 'bg-gradient-to-b from-slate-900/90 via-purple-900/80 to-slate-900/90 text-white'
+            : 'bg-white text-black'
+        }
+      `}
     >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center">
           {/* Mobile Layout */}
-          <div className="flex md:hidden w-full items-center justify-between">
+          <div
+            className={`flex md:hidden w-full items-center justify-between transition-colors ${scrolled ? 'text-white' : 'text-black'}`}
+          >
             {/* Mobile menu button */}
             <button
               type="button"
@@ -71,7 +79,9 @@ export function Header() {
 
             {/* Mobile logo */}
             <Link href="/" className="flex items-center space-x-2">
-              <span className="font-bold text-xl text-black">{siteConfig.name}</span>
+              <span className={`font-bold text-xl ${scrolled ? 'text-white' : 'text-black'}`}>
+                {siteConfig.name}
+              </span>
             </Link>
 
             {/* Mobile cart & auth */}
@@ -81,7 +91,7 @@ export function Header() {
                 {user ? (
                   <button
                     onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                    className="text-black relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-orange-400/50 hover:ring-orange-400 transition-all"
+                    className={`relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-orange-400/50 hover:ring-orange-400 transition-all ${scrolled ? 'text-white' : 'text-black'}`}
                   >
                     {user.avatar ? (
                       <Image src={user.avatar} alt={user.name} fill className="object-cover" />
@@ -93,7 +103,9 @@ export function Header() {
                   </button>
                 ) : (
                   <Button onClick={handleLogin} size="sm" variant="ghost">
-                    <LogIn className="h-4 w-4 bg-amber-400" />
+                    <LogIn
+                      className={`h-4 w-4 bg-amber-400 ${scrolled ? 'text-white' : 'text-black'}`}
+                    />
                   </Button>
                 )}
               </div>
@@ -187,13 +199,15 @@ export function Header() {
           {/* Mobile navigation dropdown */}
           {mobileMenuOpen && (
             <div className="absolute top-16 left-0 right-0 z-50 md:hidden">
-              <div className="bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900 shadow-lg ring-1 ring-white/20 backdrop-blur-sm">
+              <div
+                className={`shadow-lg ring-1 ring-white/20 backdrop-blur-sm transition-colors ${scrolled ? 'bg-gradient-to-b from-slate-900 via-purple-900 to-slate-900' : 'bg-white'}`}
+              >
                 <div className="px-2 pt-2 pb-3 space-y-1">
                   {navigation.map(item => (
                     <Link
                       key={item.name}
                       href={item.href}
-                      className="block px-3 py-2 text-base font-medium text-white hover:bg-white/10 rounded-md transition-colors"
+                      className={`block px-3 py-2 text-base font-medium rounded-md transition-colors ${scrolled ? 'text-white hover:bg-white/10' : 'text-black hover:bg-black/10'}`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {item.name}

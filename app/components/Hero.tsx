@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Button } from './ui/button';
 import { useState, useRef } from 'react';
 import { Calendar, Music, Volume2, VolumeX } from 'lucide-react';
+import Link from 'next/link';
 
 export function Hero() {
   const [isMuted, setIsMuted] = useState(true);
@@ -49,7 +50,7 @@ export function Hero() {
                 {/* Animated Music Stats */}
                 <div className="flex justify-center items-center gap-8 mb-8 text-white/80">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-orange-400">50M+</div>
+                    <div className="text-3xl font-bold text-orange-400">5M+</div>
                     <div className="text-sm">Global Streams</div>
                   </div>
                   <div className="text-center">
@@ -57,7 +58,7 @@ export function Hero() {
                     <div className="text-sm">Countries Reached</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-orange-400">2M+</div>
+                    <div className="text-3xl font-bold text-orange-400">400k+</div>
                     <div className="text-sm">Monthly Listeners</div>
                   </div>
                 </div>
@@ -75,24 +76,6 @@ export function Hero() {
                     Bugle&apos;s sound transcends borders and unites cultures.
                   </span>
                 </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-10 py-4 text-xl font-semibold shadow-2xl transform hover:scale-105 transition-all duration-300"
-                >
-                  <Music className="mr-3 h-6 w-6" />
-                  Listen Now
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-2 border-white/30 text-white hover:bg-white/10 px-10 py-4 text-xl font-semibold backdrop-blur-sm"
-                >
-                  <Calendar className="mr-3 h-6 w-6" />
-                  Tour Dates
-                </Button>
               </div>
             </div>
 
@@ -159,6 +142,27 @@ export function Hero() {
                   </span>
                 </div>
               </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-4">
+              <Link href="/music">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-10 py-4 text-xl font-semibold shadow-2xl transform hover:scale-105 transition-all duration-300"
+                >
+                  <Music className="mr-3 h-6 w-6" />
+                  Listen Now
+                </Button>
+              </Link>
+              <Link href="/shows">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-2 border-white/30 text-black hover:bg-white/10 px-10 py-4 text-xl font-semibold backdrop-blur-sm"
+                >
+                  <Calendar className="mr-3 h-6 w-6" />
+                  Tour Dates
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

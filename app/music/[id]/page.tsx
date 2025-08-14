@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Button } from '../../components/ui/button';
-import { getMusicReleaseById, getAllMusicReleases } from '../../lib/data/music';
+import { getMusicReleaseById, getAllMusicReleases } from '../../lib/data/music-db';
 import { Calendar, Clock, Music, Play, ArrowLeft, ExternalLink } from 'lucide-react';
 import NotFound from './not-found';
 
@@ -13,7 +13,7 @@ interface MusicPageProps {
 }
 
 export async function generateStaticParams() {
-  const releases = getAllMusicReleases();
+  const releases = await getAllMusicReleases();
   return releases.map(release => ({
     id: release.id,
   }));
@@ -21,7 +21,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: MusicPageProps) {
   const { id } = await params;
-  const release = getMusicReleaseById(id);
+  const release = await getMusicReleaseById(id);
 
   if (!release) {
     return NotFound();
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: MusicPageProps) {
 
 export default async function MusicPage({ params }: MusicPageProps) {
   const { id } = await params;
-  const release = getMusicReleaseById(id);
+  const release = await getMusicReleaseById(id);
 
   if (!release) {
     notFound();

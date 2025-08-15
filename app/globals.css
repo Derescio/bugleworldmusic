@@ -1,20 +1,19 @@
-/* --- UploadThing File Input Button Fix --- */
-.ut-upload-btn input[type='file']::file-selector-button {
-  color: #171717 !important;
-  /* dark text */
-  background: #fff !important;
-  /* white background for contrast */
-  font-weight: 600;
-}
+/* --- UploadThing File Input Button Fix --- .ut-upload-btn input[type='file']::file-selector-button {
+  color: #171717 !important; */
+/* dark text */
+/* background: #fff !important; */
+/* white background for contrast */
+/* font-weight: 600;
+} */
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   .ut-upload-btn input[type='file']::file-selector-button {
-    color: #ededed !important;
-    /* light text for dark mode */
-    background: #171717 !important;
-    /* dark background for contrast */
-  }
-}
+    color: #ededed !important; */
+/* light text for dark mode */
+/* background: #171717 !important; */
+/* dark background for contrast */
+/* }
+} */
 
 @import 'tailwindcss';
 

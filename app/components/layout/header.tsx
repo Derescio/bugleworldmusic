@@ -66,7 +66,7 @@ export function Header() {
             {/* Mobile menu button */}
             <button
               type="button"
-              className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+              className={`inline-flex items-center justify-center rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-colors ${scrolled ? 'text-white hover:bg-white/10 hover:text-white/80' : 'text-black hover:bg-black/10 hover:text-black/80'}`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               <span className="sr-only">Open main menu</span>
@@ -86,7 +86,10 @@ export function Header() {
 
             {/* Mobile cart & auth */}
             <div className="flex items-center gap-2">
-              <CartButton />
+              {/* CartButton always visible, context-aware color */}
+              <div className={scrolled ? 'text-white' : 'text-black'}>
+                <CartButton />
+              </div>
               <div className="relative">
                 {user ? (
                   <button
@@ -117,7 +120,9 @@ export function Header() {
             {/* Left: Logo */}
             <div className="flex-1">
               <Link href="/" className="flex items-center space-x-2">
-                <span className="font-bold text-xl text-black">{siteConfig.name}</span>
+                <span className={`font-bold text-xl ${scrolled ? 'text-white' : 'text-black'}`}>
+                  {siteConfig.name}
+                </span>
               </Link>
             </div>
 
@@ -127,21 +132,26 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`transition-colors font-medium ${scrolled ? 'text-white hover:text-white/80' : 'text-foreground/60 hover:text-foreground/80'}`}
+                  className={`transition-colors font-medium ${scrolled ? 'text-white hover:text-white/80' : 'text-slate-900/70 hover:text-slate-900'}`}
                 >
                   {item.name}
                 </Link>
               ))}
             </nav>
 
-            {/* Right: Cart & Auth */}
-            <div className="flex-1 flex justify-end items-center gap-4 text-black">
-              <CartButton />
+            {/* Right: Cart, Tour Dates & Auth */}
+            <div
+              className={`flex-1 flex justify-end items-center gap-4 ${scrolled ? 'text-white' : 'text-black'}`}
+            >
+              {/* CartButton always visible, context-aware color */}
+              <div className={scrolled ? 'text-white' : 'text-black'}>
+                <CartButton />
+              </div>
               <div className="relative">
                 {user ? (
                   <button
                     onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                    className="text-black relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-orange-400/50 hover:ring-orange-400 transition-all"
+                    className={`relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-orange-400/50 hover:ring-orange-400 transition-all ${scrolled ? 'text-white' : 'text-black'}`}
                   >
                     {user.avatar ? (
                       <Image src={user.avatar} alt={user.name} fill className="object-cover" />
@@ -152,7 +162,11 @@ export function Header() {
                     )}
                   </button>
                 ) : (
-                  <Button onClick={handleLogin} variant="outline">
+                  <Button
+                    onClick={handleLogin}
+                    variant="outline"
+                    className={scrolled ? 'text-black' : ''}
+                  >
                     <LogIn className="h-4 w-4 mr-2" />
                     Login
                   </Button>
